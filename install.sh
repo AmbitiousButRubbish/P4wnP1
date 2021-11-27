@@ -34,23 +34,23 @@ wdir=$( cd $(dirname $BASH_SOURCE[0]) && pwd)
 if $wdir/wifi/check_wifi.sh; then WIFI=true; else WIFI=false; fi
 
 # check Internet conectivity against 
-echo "Testing Internet connection and name resolution..."
-if [ "$(curl -s http://www.msftncsi.com/ncsi.txt)" != "Microsoft NCSI" ]; then 
-        echo "...[Error] No Internet connection or name resolution doesn't work! Exiting..."
-        exit
-fi
-echo "...[pass] Internet connection works"
+#echo "Testing Internet connection and name resolution..."
+#if [ "$(curl -s http://www.msftncsi.com/ncsi.txt)" != "Microsoft NCSI" ]; then 
+#        echo "...[Error] No Internet connection or name resolution doesn't work! Exiting..."
+#        exit
+#fi
+#echo "...[pass] Internet connection works"
 
 # check for Raspbian Jessie
-echo "Testing if the system runs Raspbian Jessie or Stretch..."
-if ! (grep -q -E "Raspbian.*jessie" /etc/os-release || grep -q -E "Raspbian.*stretch" /etc/os-release) ; then
-        echo "...[Error] Pi is not running Raspbian Jessie or Stretch! Exiting ..."
-        exit
-fi
-echo "...[pass] Pi seems to be running Raspbian Jessie or Stretch"
-if (grep -q -E "Raspbian.*stretch" /etc/os-release) ; then
-	STRETCH=true
-fi
+#echo "Testing if the system runs Raspbian Bullseye..."
+#if ! (grep -q -E "Raspbian.*bullseye" /etc/os-release ) ; then
+#        echo "...[Error] Pi is not running Raspbian Bullseye! Exiting ..."
+#        exit
+#fi
+#echo "...[pass] Pi seems to be running Raspbian Bullseye"
+#if (grep -q -E "Raspbian.*stretch" /etc/os-release) ; then
+#	STRETCH=true
+#fi
 
 
 echo "Backing up resolv.conf"
@@ -66,7 +66,7 @@ sudo apt-get -y upgrade # include patched bluetooth stack
 #fi
 
 # hostapd gets installed in even if WiFi isn't present (SD card could be moved from "Pi Zero" to "Pi Zero W" later on)
-sudo apt-get -y install dnsmasq git python-pip python-dev screen sqlite3 inotify-tools hostapd autossh bluez bluez-tools bridge-utils ethtool  policykit-1 tshark tcpdump iodine
+sudo apt-get -y install dnsmasq git python3-pip python-dev screen sqlite3 inotify-tools hostapd autossh bluez bluez-tools bridge-utils ethtool  policykit-1 tshark tcpdump iodine
 
 
 # at this point the nameserver in /etc/resolv.conf is set to 127.0.0.1, so we replace it with 8.8.8.8
@@ -75,9 +75,9 @@ sudo apt-get -y install dnsmasq git python-pip python-dev screen sqlite3 inotify
 #		$ sudo bash -c "cat /etc/resolv.conf > /tmp/backup"
 #	and restore here with
 #		$ sudo bash -c "cat /tmp/backup > /etc/resolv.conf"
-sudo bash -c "cat /tmp/resolv.conf > /etc/resolv.conf"
+#sudo bash -c "cat /tmp/resolv.conf > /etc/resolv.conf"
 # append 8.8.8.8 as fallback secondary dns
-sudo bash -c "echo nameserver 8.8.8.8 >> /etc/resolv.conf"
+#sudo bash -c "echo nameserver 8.8.8.8 >> /etc/resolv.conf"
 
 # install pycrypto
 echo "Installing needed python additions..."
@@ -96,11 +96,10 @@ mv setup.bkp setup.cfg
 
 # disable interfering services
 echo "Disabeling unneeded services to shorten boot time ..."
-sudo update-rc.d ntp disable # not needed for stretch (only jessie)
 sudo update-rc.d avahi-daemon disable
 sudo update-rc.d dhcpcd disable
-sudo update-rc.d networking disable
-sudo update-rc.d avahi-daemon disable
+#Disabled for now
+#sudo update-rc.d networking disable 
 sudo update-rc.d dnsmasq disable # we start this by hand later on
 
 echo "Create udev rule for HID devices..."
@@ -113,31 +112,31 @@ sudo update-rc.d ssh enable
 
 echo "Checking network setup.."
 # set manual configuration for usb0 (RNDIS) if not already done
-if ! grep -q -E '^iface usb0 inet manual$' /etc/network/interfaces; then
-	echo "Entry for manual configuration of RNDIS interface not found, adding..."
-	sudo /bin/bash -c "printf '\niface usb0 inet manual\n' >> /etc/network/interfaces"
-else
-	echo "Entry for manual configuration of RNDIS interface found"
-fi
+#if ! grep -q -E '^iface usb0 inet manual$' /etc/network/interfaces; then
+#	echo "Entry for manual configuration of RNDIS interface not found, adding..."
+#	sudo /bin/bash -c "printf '\niface usb0 inet manual\n' >> /etc/network/interfaces"
+#else
+#	echo "Entry for manual configuration of RNDIS interface found"
+#fi
 
 # set manual configuration for usb1 (CDC ECM) if not already done
-if ! grep -q -E '^iface usb1 inet manual$' /etc/network/interfaces; then
-	echo "Entry for manual configuration of CDC ECM interface not found, adding..."
-	sudo /bin/bash -c "printf '\niface usb1 inet manual\n' >> /etc/network/interfaces"
-else
-	echo "Entry for manual configuration of CDC ECM interface found"
-fi
+#if ! grep -q -E '^iface usb1 inet manual$' /etc/network/interfaces; then
+#	echo "Entry for manual configuration of CDC ECM interface not found, adding..."
+#	sudo /bin/bash -c "printf '\niface usb1 inet manual\n' >> /etc/network/interfaces"
+#else
+#	echo "Entry for manual configuration of CDC ECM interface found"
+#fi
 
-echo "Unpacking John the Ripper Jumbo edition..."
-if $STRETCH; then
-	cd john-1-8-0-jumbo_raspbian_jessie_precompiled/
-	git fetch
-	git checkout jtr_stretch
-	cd ..
-	tar zxf john-1-8-0-jumbo_raspbian_jessie_precompiled/john-1-8-0-jumbo_raspbian_stretch_precompiled.tar.gz
-else
-	tar xJf john-1-8-0-jumbo_raspbian_jessie_precompiled/john-1.8.0-jumbo-1_precompiled_raspbian_jessie.tar.xz
-fi
+#echo "Unpacking John the Ripper Jumbo edition..."
+#if $STRETCH; then
+#	cd john-1-8-0-jumbo_raspbian_jessie_precompiled/
+#	git fetch
+#	git checkout jtr_stretch
+#	cd ..
+#	tar zxf john-1-8-0-jumbo_raspbian_jessie_precompiled/john-1-8-0-jumbo_raspbian_stretch_precompiled.tar.gz
+#else
+#	tar xJf john-1-8-0-jumbo_raspbian_jessie_precompiled/john-1.8.0-jumbo-1_precompiled_raspbian_jessie.tar.xz
+#fi
 
 
 # overwrite Responder configuration
@@ -252,7 +251,7 @@ echo "Installing kernel update ..."
 #sudo rpi-update 913eddd6d23f14ce34ae473a4c080c5c840ed583 # force kernel 4.9.51+ for nexmon compatability
 
 # Raspbian stretch with Kernel >= 4.9.78+ (working bluetooth, nexmon module compiled for this version)
-sudo rpi-update 23a007716a0c6a8677097be859cf7063ae093d27
+#sudo rpi-update 23a007716a0c6a8677097be859cf7063ae093d27
 
 # ToDo: the correct branch of nexmon for the current update kernel should be checked out here,
 #       to do this the downloaded kernel version has to be feteched, which is only available after reboot from `uname -r`
